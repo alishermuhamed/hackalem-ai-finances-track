@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HackAlem AI — «Граф денег»
 
-## Getting Started
+Трек «Финансы»: инструмент для AML-аналитика, который по графу внутрибанковских переводов должен определять объяснимые роли узлов, кластеры и приоритеты проверки. [Продукт](docs/product.md), [архитектура](docs/architecture.md), [условия кейса](docs/hackathon.md).
 
-First, run the development server:
+## Текущее состояние
+
+В [`docs/data/`](docs/data/README.md) находятся три предоставленных организатором `.parquet`: 2 248 узлов, 3 119 рёбер и 4 840 транзакций. [`docs/starter/`](docs/starter/README.md) содержит исходный шаблон расчёта. Он строит граф и базовые признаки, затем создаёт `nodes_roles.csv`, `clusters.csv`, `top_nodes.csv` **с пустыми ролями, кластерами и топ-листом**. Эти файлы пока не отвечают обязательным требованиям кейса. Финальный аналитический пайплайн и экран сети ещё не реализованы.
+
+## Запуск стартового шаблона
+
+Из корня репозитория, с установленным Python и `pip`:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r docs/starter/requirements.txt
+python docs/starter/starter.py --data docs/data --out out
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Результат появляется в `out/`. Скрипт печатает число узлов, рёбер, транзакций, seed, оборот, период, количество изолированных узлов и подсказки по графу. Его запуск проверяет загрузку данных и формирование каркаса, но **не означает**, что роли или приоритеты рассчитаны. Поля исходных файлов описаны в [`docs/data/README.md`](docs/data/README.md), базовые метрики — в [`docs/starter/README.md`](docs/starter/README.md).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Текущая веб-заготовка
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+В `app/` пока находится минимальный потоковый AI-чат на Next.js, AI Elements и AI SDK. Он не использует граф и не является экраном финансового кейса. Для его отдельного запуска:
 
-## Learn More
+```bash
+npm install
+cp .env.example .env.local
+```
 
-To learn more about Next.js, take a look at the following resources:
+Для чата задайте `OPENAI_API_KEY` в `.env.local`; `OPENAI_MODEL` необязателен, значение по умолчанию — `gpt-5-mini`. Затем:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev -- --hostname 127.0.0.1
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Откройте [localhost:3000](http://localhost:3000). Ключ используется только на сервере. Обязательный сценарий финансового кейса должен работать локально без ключа и внешнего API.
 
-## Deploy on Vercel
+## Что требуется для сдачи
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Одна команда должна пересчитать исходные `.parquet` в три заполненных CSV за ≤ 5 минут. Нужны объяснимые роли всех узлов, заполненные кластеры, топ не менее 20 узлов и экран с направлением потоков, ролями и поиском `gid`. После реализации здесь будут зафиксированы фактическая команда запуска, правила и пороги, проверка результата, ограничения, схема компонентов и подход к графу порядка 1 млн узлов.
